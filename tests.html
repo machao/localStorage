@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>localStorage 测试用例</title>
+<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.12.0.css">
+<script src="storage.js"></script>
+<script src="http://code.jquery.com/qunit/qunit-1.12.0.js"></script>
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script>
+test( "本地存储 window.LS 测试", 8, function() {
+	var w = function(key, value){ window.LS.set(key, value); };
+	var r = function(key){ return window.LS.get(key); };
+	var undefined, rnd = (+new Date())+"";
+	
+	w("a", rnd);
+	ok( r("a") == rnd, "简单的读写" );
+	
+	w("1a", "1a");
+	ok( r("1a") == "1a", "以数字开头的key读写测试" );
+	
+	w("~!@#$%^&*()_+=-`,./\?><|{}[]", "hello");
+	ok( r("~!@#$%^&*()_+=-`,./\?><|{}[]") == "hello", "包含特殊字符的key读写测试" );
+	
+	window.LS.remove("a");
+	ok( r("a") == undefined, "remove测试");
+	
+	window.LS.clear();
+	ok( window.LS.length == 0 && r("1a") == undefined, "clear测试" );
+	
+	var testLength = function(){
+		window.LS.clear();
+		if( window.LS.length == 0 ){
+			w("a", "a");
+			if( window.LS.length == 1 ){
+				w("b", "b");
+				if( window.LS.length == 2 ){
+					window.LS.remove("a");
+					if( window.LS.length == 1 ){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	ok( testLength(), "length属性测试" );
+	
+	var testEach = function(){
+		var i = 0, result = {
+			"a" : "a",
+			"b" : "b",
+			"c" : "c"
+		};
+		window.LS.clear();
+		w("a", "a");
+		w("b", "b");
+		w("c", "c");
+		window.LS.each(function(k, v){
+			if( result[k] == v ){
+				i ++;
+				delete result[k];
+			}
+		});
+		return i == 3;
+	}
+	ok( testEach(), "each方法测试" );
+	
+	function testObj(){
+		var i = 0, result = {
+			"a" : "a",
+			"b" : "b",
+			"c" : "c"
+		};
+		window.LS.clear();
+		w("a", "a");
+		w("b", "b");
+		w("c", "c");
+		var obj = window.LS.obj();
+		for(var k in obj){
+			if( result[k] == obj[k] ){
+				i ++;
+				delete result[k];
+			}
+		}
+		return i == 3;
+	}
+	ok( testObj(), "obj方法测试");
+});
+</script>
+</body>
+</html>
